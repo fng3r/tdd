@@ -16,7 +16,7 @@ namespace TagsCloudVisualization
 
         public Rectangle PutNextRectangle(Size rectSize)
         {
-            return new Rectangle(center, Size.Empty);
+            return new Rectangle(center, rectSize);
         }
     }
 
