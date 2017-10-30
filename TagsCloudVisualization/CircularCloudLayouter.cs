@@ -1,8 +1,9 @@
-﻿using System.Drawing;
-using NUnit.Framework;
+﻿using System;
+using System.Drawing;
 using FluentAssertions;
+using NUnit.Framework;
 
-namespace TagCloudVisualization
+namespace TagsCloudVisualization
 {
     class CircularCloudLayouter
     {
@@ -15,7 +16,7 @@ namespace TagCloudVisualization
 
         public Rectangle PutNextRectangle(Size rectSize)
         {
-            return Rectangle.Empty;
+            return new Rectangle(center, Size.Empty);
         }
     }
 
