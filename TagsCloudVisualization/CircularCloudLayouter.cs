@@ -39,5 +39,14 @@ namespace TagsCloudVisualization
         {
             layouter.PutNextRectangle(new Size(10, 10)).Location.Should().Be(center);
         }
+
+        [TestCase(0, 0)]
+        [TestCase(10, 200)]
+        [TestCase(1000, 50)]
+        public void PutRectangle_WithGivenSize(int width, int height)
+        {
+            var rectSize = new Size(width, height);
+            layouter.PutNextRectangle(rectSize).Size.Should().Be(rectSize);
+        }
     }
 }
