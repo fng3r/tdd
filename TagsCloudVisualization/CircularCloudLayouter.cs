@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using FluentAssertions;
 using NUnit.Framework;
@@ -7,16 +8,22 @@ namespace TagsCloudVisualization
 {
     class CircularCloudLayouter
     {
+        public List<Rectangle> Rectangles { get; }
+
         private readonly Point center;
 
         public CircularCloudLayouter(Point center)
         {
             this.center = center;
+            Rectangles = new List<Rectangle>();
         }
 
         public Rectangle PutNextRectangle(Size rectSize)
         {
-            return new Rectangle(center, rectSize);
+            var rectangle = new Rectangle(center, rectSize);
+            Rectangles.Add(rectangle);
+
+            return rectangle;
         }
     }
 
