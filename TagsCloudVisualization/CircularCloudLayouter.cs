@@ -97,14 +97,14 @@ namespace TagsCloudVisualization
             var uppermostRect = rectangles.MaxBy(r => r.Center().Y);
             var nethermostRect = rectangles.MinBy(r => r.Center().Y);
 
-            var outerRects = new[] {leftmostRect, rightmostRect, uppermostRect, nethermostRect};
+            var outerRects = new[] { leftmostRect, rightmostRect, uppermostRect, nethermostRect };
 
-            var deltas = outerRects
+            var distancesToCenter = outerRects
                 .Select(r => r.Center())
                 .Select(p => GetVectorLength(p, center));
 
-            deltas
-                .SelectMany(d1 => deltas.Select(d2 => Math.Abs(d1 - d2)))
+            distancesToCenter
+                .SelectMany(d1 => distancesToCenter.Select(d2 => Math.Abs(d1 - d2)))
                 .Max()
                 .Should().BeInRange(0, maxRectBound);
 
