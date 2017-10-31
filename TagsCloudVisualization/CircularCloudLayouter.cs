@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -21,6 +22,11 @@ namespace TagsCloudVisualization
         public Rectangle PutNextRectangle(Size rectSize)
         {
             var rectangle = new Rectangle(center, rectSize);
+            if (Rectangles.Any(r => r.IntersectsWith(rectangle)))
+            {
+                var lastRectLocation = Rectangles[Rectangles.Count - 1].Location;
+                rectangle.Location = lastRectLocation - (rectSize + new Size(1, 1));
+            }
             Rectangles.Add(rectangle);
 
             return rectangle;
@@ -65,6 +71,33 @@ namespace TagsCloudVisualization
                 layouter.PutNextRectangle(new Size(10, 10));
 
             layouter.Rectangles.Should().HaveCount(count);
+        }
+
+        [Test]
+        public void NotContain_IntersectedRectangles()
+        {
+            PutRandomRectangles(100);
+            var rectangles = layouter.Rectangles;
+            rectangles.All(rect => !rectangles.Any(otherRect => otherRect != rect && rect.IntersectsWith(otherRect))).Should().BeTrue();
+        }
+
+        private void PutRandomRectangles(int count, int maxBound = 100)
+        {
+            foreach (var size in GetRandomRectangleSizes(count, maxBound))
+                layouter.PutNextRectangle(size);
+        }
+
+        private IEnumerable<Size> GetRandomRectangleSizes(int count, int maxBound)
+        {
+            Random rnd = new Random();
+            return GenerateSizes().Take(count);
+
+            IEnumerable<Size> GenerateSizes()
+            {
+                while (true)
+                    yield return new Size(rnd.Next(maxBound), rnd.Next(maxBound));
+                // ReSharper disable once IteratorNeverReturns
+            }
         }
     }
 }
