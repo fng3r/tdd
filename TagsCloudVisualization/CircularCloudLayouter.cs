@@ -82,6 +82,26 @@ namespace TagsCloudVisualization
             rectangles.All(rect => rectangles.All(otherRect => otherRect == rect || !rect.IntersectsWith(otherRect))).Should().BeTrue();
         }
 
+        [Test]
+        public void EvenlyDistribute_Rectangles()
+        {
+            var maxRectBound = 100;
+            PutRandomRectangles(100, maxRectBound);
+
+            var rectangles = layouter.Rectangles;
+            var dx1 = rectangles.Min(r => Math.Abs(r.Center().X - center.X));
+            var dx2 = rectangles.Max(r => Math.Abs(r.Center().X - center.X));
+            var dy1 = rectangles.Max(r => Math.Abs(r.Center().Y - center.Y));
+            var dy2 = rectangles.Min(r => Math.Abs(r.Center().Y - center.Y));
+            var deltas = new[] { dx1, dx2, dy1, dy2 };
+            Console.WriteLine($"{dx1}, {dx2}, {dy1}, {dy2}");
+
+            deltas
+                .SelectMany(c1 => deltas.Select(c2 => (c1, c2)))
+                .Max(t => Math.Abs(t.Item1 - t.Item2))
+                .Should().BeInRange(0, maxRectBound);
+        }
+
         private void PutRandomRectangles(int count, int maxBound = 100)
         {
             foreach (var size in GetRandomRectangleSizes(count, maxBound))
