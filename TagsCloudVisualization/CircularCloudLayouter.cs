@@ -4,33 +4,36 @@ using System.Drawing;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
+using MoreLinq;
 
 namespace TagsCloudVisualization
 {
-    class CircularCloudLayouter
+    public class CircularCloudLayouter
     {
-        public List<Rectangle> Rectangles { get; }
-
         private readonly Point center;
+        private readonly Spiral spiral;
+        public List<Rectangle> Rectangles { get; }
 
         public CircularCloudLayouter(Point center)
         {
             this.center = center;
+            spiral = new Spiral(center);
             Rectangles = new List<Rectangle>();
         }
 
-        public Rectangle PutNextRectangle(Size rectSize)
+        public Rectangle PutNextRectangle(Size rectangleSize)
         {
-            var rectangle = new Rectangle(center, rectSize);
-            if (Rectangles.Count > 0)
+            foreach (var point in spiral)
             {
-                var lastRectLocation = Rectangles[Rectangles.Count - 1].Location;
-                var rectangleLocation = lastRectLocation - (rectSize + new Size(1, 1));
-                rectangle.Location = rectangleLocation;
-            }
-            Rectangles.Add(rectangle);
+                var rectangleLocation = new Point(point.X - rectangleSize.Width / 2, point.Y - rectangleSize.Height / 2);
+                var rectangle = new Rectangle(rectangleLocation, rectangleSize);
+                if (rectangle.IntersectsWith(Rectangles)) continue;
+                Rectangles.Add(rectangle);
 
-            return rectangle;
+                return rectangle;
+            }
+
+            return Rectangle.Empty;
         }
     }
 
@@ -82,24 +85,33 @@ namespace TagsCloudVisualization
             rectangles.All(rect => rectangles.All(otherRect => otherRect == rect || !rect.IntersectsWith(otherRect))).Should().BeTrue();
         }
 
-        [Test]
-        public void EvenlyDistribute_Rectangles()
+        [TestCase(100, 50)]
+        [TestCase(50, 500)]
+        public void EvenlyDistribute_Rectangles(int count, int maxRectBound)
         {
-            var maxRectBound = 100;
-            PutRandomRectangles(100, maxRectBound);
+            PutRandomRectangles(count, maxRectBound);
 
             var rectangles = layouter.Rectangles;
-            var dx1 = rectangles.Min(r => Math.Abs(r.Center().X - center.X));
-            var dx2 = rectangles.Max(r => Math.Abs(r.Center().X - center.X));
-            var dy1 = rectangles.Max(r => Math.Abs(r.Center().Y - center.Y));
-            var dy2 = rectangles.Min(r => Math.Abs(r.Center().Y - center.Y));
-            var deltas = new[] { dx1, dx2, dy1, dy2 };
-            Console.WriteLine($"{dx1}, {dx2}, {dy1}, {dy2}");
+            var leftmostRect = rectangles.MinBy(r => r.Center().X);
+            var rightmostRect = rectangles.MaxBy(r => r.Center().X);
+            var uppermostRect = rectangles.MaxBy(r => r.Center().Y);
+            var nethermostRect = rectangles.MinBy(r => r.Center().Y);
+
+            var outerRects = new[] {leftmostRect, rightmostRect, uppermostRect, nethermostRect};
+
+            var deltas = outerRects
+                .Select(r => r.Center())
+                .Select(p => GetVectorLength(p, center));
 
             deltas
-                .SelectMany(c1 => deltas.Select(c2 => (c1, c2)))
-                .Max(t => Math.Abs(t.Item1 - t.Item2))
+                .SelectMany(d1 => deltas.Select(d2 => Math.Abs(d1 - d2)))
+                .Max()
                 .Should().BeInRange(0, maxRectBound);
+
+            double GetVectorLength(Point a, Point b)
+            {
+                return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
+            }
         }
 
         private void PutRandomRectangles(int count, int maxBound = 100)
