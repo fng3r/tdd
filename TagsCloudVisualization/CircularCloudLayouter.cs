@@ -71,9 +71,7 @@ namespace TagsCloudVisualization
         [TestCase(10000)]
         public void Save_AllPlacedRectangles(int count)
         {
-            for (int i = 0; i < count; i++)
-                layouter.PutNextRectangle(new Size(10, 10));
-
+            PutRandomRectangles(count);
             layouter.Rectangles.Should().HaveCount(count);
         }
 
