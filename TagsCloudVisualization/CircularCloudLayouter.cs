@@ -22,10 +22,11 @@ namespace TagsCloudVisualization
         public Rectangle PutNextRectangle(Size rectSize)
         {
             var rectangle = new Rectangle(center, rectSize);
-            if (Rectangles.Any(r => r.IntersectsWith(rectangle)))
+            if (Rectangles.Count > 0)
             {
                 var lastRectLocation = Rectangles[Rectangles.Count - 1].Location;
-                rectangle.Location = lastRectLocation - (rectSize + new Size(1, 1));
+                var rectangleLocation = lastRectLocation - (rectSize + new Size(1, 1));
+                rectangle.Location = rectangleLocation;
             }
             Rectangles.Add(rectangle);
 
@@ -78,7 +79,7 @@ namespace TagsCloudVisualization
         {
             PutRandomRectangles(100);
             var rectangles = layouter.Rectangles;
-            rectangles.All(rect => !rectangles.Any(otherRect => otherRect != rect && rect.IntersectsWith(otherRect))).Should().BeTrue();
+            rectangles.All(rect => rectangles.All(otherRect => otherRect == rect || !rect.IntersectsWith(otherRect))).Should().BeTrue();
         }
 
         private void PutRandomRectangles(int count, int maxBound = 100)
