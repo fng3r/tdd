@@ -12,7 +12,8 @@ namespace TagsCloudVisualization
         public static Point Center(this Rectangle rect)  
             => new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
 
-        public static bool IntersectsWith(this Rectangle rect, IEnumerable<Rectangle> otherRects) => false;
+        public static bool IntersectsWith(this Rectangle rect, IEnumerable<Rectangle> otherRects)
+            => otherRects.Any(rect.IntersectsWith);
     }
 
     [TestFixture]
