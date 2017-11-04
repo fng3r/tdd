@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
 using FluentAssertions;
 using MoreLinq;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 
 namespace TagsCloudVisualization
 {
@@ -61,7 +63,7 @@ namespace TagsCloudVisualization
             PutRandomRectangles(count, maxRectBound);
 
             var rectangles = layouter.Rectangles;
-            var leftmostRect = rectangles.MinBy(r => RectangleExtensions.Center(r).X);
+            var leftmostRect = rectangles.MinBy(r => r.Center().X);
             var rightmostRect = rectangles.MaxBy(r => r.Center().X);
             var uppermostRect = rectangles.MaxBy(r => r.Center().Y);
             var nethermostRect = rectangles.MinBy(r => r.Center().Y);
@@ -82,6 +84,23 @@ namespace TagsCloudVisualization
                 return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
             }
         }
+
+        [TearDown]
+        public void TearDown()
+        {
+            var context = TestContext.CurrentContext;
+            if (context.Result.Outcome.Status == TestStatus.Failed)
+            {
+                var outputFile = $@"..\..\{context.TestDirectory}\FailedTests\{context.Test.Name}.jpg";
+                var visualizer = new TagsCloudVisualizer(config => config);
+                var bitmap = visualizer.DrawRectangles(Screen.PrimaryScreen.Bounds.Width,
+                    Screen.PrimaryScreen.Bounds.Height, layouter.Rectangles);
+                bitmap.Save(outputFile);
+
+                Console.WriteLine($"Tag cloud visualization saved to file {outputFile}");
+            }
+        }
+
 
         private void PutRandomRectangles(int count, int maxBound = 100)
         {
